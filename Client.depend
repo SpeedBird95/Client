@@ -1,9 +1,11 @@
 # depslib dependency file v1.0
-1427569341 source:c:\users\ameen\documents\cpp\server\client\main.cpp
+1427577787 source:c:\users\ameen\documents\cpp\server\client\main.cpp
+	<windows.h>
 	<winsock2.h>
 	<windns.h>
 	<iostream>
 	<process.h>
 	<stdio.h>
 	<string>
+	<tchar.h>
 
